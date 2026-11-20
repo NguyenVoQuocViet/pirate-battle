@@ -1,0 +1,19 @@
+# Thư viện cài bằng npm (cài lại bằng npm install)
+node_modules/
+
+# Bản build của Vite (Netlify / Cloudflare tự build lại)
+client/dist/
+dist/
+
+# Biến môi trường thật — không đưa lên GitHub (giữ lại file mẫu .env.example)
+.env
+.env.*
+!.env.example
+
+# Log & file rác của hệ điều hành / trình soạn thảo
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

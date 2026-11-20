@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pirate Battle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Lớp nhãn tên/máu và số sát thương (vị trí tính từ 3D) -->
+    <div id="labels" hidden></div>
+
+    <!-- HUD trong trận -->
+    <div id="hud" class="panel" hidden></div>
+    <div id="hud-right" class="panel" hidden></div>
+    <div id="toasts" hidden></div>
+    <div id="killfeed" hidden></div>
+    <div id="prompt" hidden></div>
+    <div id="respawn" hidden></div>
+
+    <!-- HUD online -->
+    <div id="room-bar" class="panel" hidden></div>
+    <div id="leaderboard" class="panel" hidden></div>
+    <div id="team-score" class="panel" hidden></div>
+    <div id="death" class="screen screen-modal" hidden></div>
+    <div id="match-end" class="screen screen-modal" hidden></div>
+    <div id="scoreboard" hidden></div>
+    <div id="upgrades" class="panel" hidden></div>
+    <div id="abilities" hidden></div>
+    <div id="career" class="panel" hidden></div>
+    <div id="touch" hidden></div>
+
+    <div id="help" class="panel" hidden>
+      <div><kbd>W</kbd><kbd>S</kbd> tăng/giảm tốc · <kbd>A</kbd><kbd>D</kbd> bánh lái · <kbd>Space</kbd> bắn hai mạn</div>
+      <div>Click lên mặt biển: bắn mạn phía trỏ chuột · Lăn chuột: zoom</div>
+      <div><kbd>R</kbd> nạp đạn ở tháp · <kbd>Tab</kbd> bảng xếp hạng · <kbd>M</kbd> bản đồ lớn · <kbd>Esc</kbd> menu</div>
+      <div><kbd>1</kbd>–<kbd>4</kbd> nâng cấp bằng vàng · <kbd>E</kbd>/<kbd>Shift</kbd> lướt sóng · xuôi gió nhanh hơn</div>
+    </div>
+
+    <div id="minimap" hidden>
+      <canvas></canvas>
+      <div class="mm-controls">
+        <button class="mm-in" title="Phóng to">+</button>
+        <span class="mm-scale num">520 m</span>
+        <button class="mm-out" title="Thu nhỏ">−</button>
+        <button class="mm-toggle" title="Mở/đóng bản đồ lớn (M)">M</button>
+      </div>
+    </div>
+
+    <div id="hit-overlay"></div>
+
+    <!-- Màn hình -->
+    <div id="menu" class="screen screen-menu" hidden></div>
+    <div id="pause" class="screen screen-modal" hidden></div>
+    <div id="summary" class="screen screen-modal" hidden></div>
+
+    <div id="loading">Đang nạp mô hình…</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

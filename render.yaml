@@ -1,0 +1,18 @@
+# Render Blueprint cho backend (Node + Socket.io).
+# Server import cấu hình dùng chung từ client/src/config nên build từ thư mục gốc repo,
+# KHÔNG đặt Root Directory = server.
+services:
+  - type: web
+    name: pirate-battle-server
+    runtime: node
+    plan: free
+    buildCommand: npm install --prefix server
+    startCommand: npm start --prefix server
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      # Địa chỉ trang game trên Netlify / Cloudflare Pages, vd: https://pirate-battle.netlify.app
+      # (bỏ trống lúc đầu = cho phép mọi nơi; điền sau khi có link frontend)
+      - key: CLIENT_URL
+        sync: false
