@@ -7,6 +7,7 @@ const ICON = {
   pause: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
   sound: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>',
   mute: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>',
+  music: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
 };
 
 function formatTime(sec) {
@@ -20,9 +21,10 @@ function formatTime(sec) {
  * bảng hạ gục, nhắc nạp đạn, đếm ngược hồi sinh, nhãn trên đầu tàu, số bay, tạm dừng, tổng kết.
  */
 export class Hud {
-  constructor({ camera, onPause, onResume, onToggleSound, onRestart, onMenu, muted }) {
+  constructor({ camera, onPause, onResume, onToggleSound, onToggleMusic, audioState, onRestart, onMenu, muted }) {
     this.camera = camera;
-    this.callbacks = { onPause, onResume, onToggleSound, onRestart, onMenu };
+    this.audioState = audioState;
+    this.callbacks = { onPause, onResume, onToggleSound, onToggleMusic, onRestart, onMenu };
 
     this.left = document.getElementById('hud');
     this.right = document.getElementById('hud-right');
@@ -66,6 +68,7 @@ export class Hud {
       </div>
       <div class="hud-buttons">
         <button type="button" class="icon-btn" id="pause-btn" title="Menu / Tạm dừng (ESC)">${ICON.pause}<span class="kbd">ESC</span></button>
+        <button type="button" class="icon-btn" id="music-btn" title="Bật/tắt nhạc nền (N)">${ICON.music}</button>
         <button type="button" class="icon-btn" id="sound-btn" title="Bật/tắt âm thanh"></button>
       </div>`;
 
@@ -86,9 +89,11 @@ export class Hud {
       kd: q(this.right, '#kd'),
       gold: q(this.right, '#gold'),
       soundBtn: q(this.right, '#sound-btn'),
+      musicBtn: q(this.right, '#music-btn'),
     };
+    this.el.musicBtn.addEventListener('click', () => this.callbacks.onToggleMusic?.());
     q(this.right, '#pause-btn').addEventListener('click', () => this.callbacks.onPause?.());
-    this.el.soundBtn.addEventListener('click', () => this.setMuted(this.callbacks.onToggleSound?.()));
+    this.el.soundBtn.addEventListener('click', () => this.callbacks.onToggleSound?.());
     this.setMuted(muted);
 
     this.pauseEl.innerHTML = `
@@ -99,10 +104,16 @@ export class Hud {
           <button type="button" class="btn btn-primary" data-act="resume">Tiếp tục</button>
           <button type="button" class="btn" data-act="menu">Về Menu đổi tàu</button>
         </div>
-        <div class="label muted">ESC để tiếp tục</div>
+        <div class="audio-row">
+          <button type="button" class="toggle" data-act="music"></button>
+          <button type="button" class="toggle" data-act="sfx"></button>
+        </div>
+        <div class="label muted">ESC để tiếp tục · N bật/tắt nhạc</div>
       </div>`;
     this.pauseEl.querySelector('[data-act=resume]').addEventListener('click', () => this.callbacks.onResume?.());
     this.pauseEl.querySelector('[data-act=menu]').addEventListener('click', () => this.callbacks.onMenu?.());
+    this.pauseEl.querySelector('[data-act=music]').addEventListener('click', () => this.callbacks.onToggleMusic?.());
+    this.pauseEl.querySelector('[data-act=sfx]').addEventListener('click', () => this.callbacks.onToggleSound?.());
 
     this.labels = new Map();
     this.floaters = [];
@@ -114,6 +125,20 @@ export class Hud {
   setMuted(m) {
     this.el.soundBtn.innerHTML = m ? ICON.mute : ICON.sound;
     this.el.soundBtn.classList.toggle('off', !!m);
+    const b = this.pauseEl.querySelector('[data-act=sfx]');
+    if (b) {
+      b.textContent = `Âm thanh: ${m ? 'Tắt' : 'Bật'}`;
+      b.classList.toggle('on', !m);
+    }
+  }
+
+  setMusic(on) {
+    this.el.musicBtn.classList.toggle('off', !on);
+    const b = this.pauseEl.querySelector('[data-act=music]');
+    if (b) {
+      b.textContent = `Nhạc nền: ${on ? 'Bật' : 'Tắt'}`;
+      b.classList.toggle('on', on);
+    }
   }
 
   setVisible(v) {
@@ -135,6 +160,11 @@ export class Hud {
   showPause(v, online = false) {
     this.pauseEl.hidden = !v;
     if (!v) return;
+    const a = this.audioState?.();
+    if (a) {
+      this.setMusic(a.music);
+      this.setMuted(!a.sound);
+    }
     this.pauseEl.querySelector('.label').textContent = online ? 'Menu' : 'Tạm dừng';
     this.pauseEl.querySelector('h2').textContent = online ? 'Trận online vẫn đang diễn ra' : 'Neo tàu nghỉ ngơi';
     this.pauseEl.querySelector('[data-act=menu]').textContent = online ? 'Rời phòng' : 'Về Menu đổi tàu';

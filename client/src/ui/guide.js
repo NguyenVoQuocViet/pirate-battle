@@ -16,6 +16,7 @@ function sections() {
     [`${key('E')} ${key('Shift')}`, `Kỹ năng “${SKILL.name}”`],
     [key('Tab'), 'Giữ để xem bảng xếp hạng'],
     [key('M'), 'Mở / đóng bản đồ lớn'],
+    [key('N'), 'Bật / tắt nhạc nền'],
     [key('Esc'), 'Tạm dừng (chơi đơn) · mở menu (online)'],
     ['Lăn chuột', 'Zoom camera · trên minimap: zoom bản đồ'],
     [`${key('Enter')} ${key('←')} ${key('→')}`, 'Ở menu: vào trận · đổi tàu'],

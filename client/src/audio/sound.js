@@ -34,6 +34,7 @@ export class Sound {
       comp.threshold.value = -14;
       comp.ratio.value = 6;
       comp.connect(this.ctx.destination);
+      this.out = comp; // lối ra chung: nhạc nền nối vào đây, không qua nút tắt âm thanh hiệu ứng
       this.master = this.ctx.createGain();
       this.master.gain.value = this.muted ? 0 : 0.55;
       this.master.connect(comp);
@@ -42,6 +43,7 @@ export class Sound {
       this.noise = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
       const data = this.noise.getChannelData(0);
       for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      this.onUnlock?.();
     }
     if (this.ctx.state === 'suspended') this.ctx.resume();
   }

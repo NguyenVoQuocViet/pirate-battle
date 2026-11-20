@@ -11,7 +11,7 @@ const PLAY_TYPES = [
 const CODE_RE = /^[A-Z0-9]{4,6}$/;
 const ONLINE_MODES = [
   { id: 'ffa', name: 'Tự do', desc: 'Ai cũng là đối thủ. Xếp hạng theo số tàu hạ được và vàng.' },
-  { id: 'tdm', name: 'Đồng đội', desc: MODES.tdm.desc + ' Server tự chia đội Xanh / Đỏ cân bằng.' },
+  { id: 'tdm', name: 'Đồng đội', desc: MODES.tdm.desc},
   { id: 'ctf', name: 'Cướp cờ', desc: MODES.ctf.desc },
 ];
 
@@ -54,7 +54,10 @@ function statBars(type) {
  * Màn hình menu chính: nhập tên thuyền trưởng, chọn số bot, chọn tàu (xem trước 3D ở nền).
  */
 export class Menu {
-  constructor({ onSelectShip, onStart, onOnline, onCancel, onWarmup }) {
+  constructor({ onSelectShip, onStart, onOnline, onCancel, onWarmup, onToggleMusic, onToggleSound, audioState }) {
+    this.onToggleMusic = onToggleMusic;
+    this.onToggleSound = onToggleSound;
+    this.audioState = audioState;
     this.onSelectShip = onSelectShip;
     this.onStart = onStart;
     this.onOnline = onOnline;
@@ -74,7 +77,7 @@ export class Menu {
       privateBots: NET.privateBotOptions.includes(prefs.privateBots) ? prefs.privateBots : NET.privateBotOptions[1],
       code: '',
       onlineMode: ONLINE_MODES.some((m) => m.id === prefs.onlineMode) ? prefs.onlineMode : 'ffa',
-      sideTab: prefs.sideTab === 'guide' ? 'guide' : 'ships',
+      sideTab: 'ships', // mới vào web luôn mở bảng Chọn tàu trước (không nhớ tab Hướng dẫn)
     };
 
     this.el = document.getElementById('menu');
@@ -162,6 +165,10 @@ export class Menu {
           </div>
         </div>
 
+        <div class="audio-row">
+          <button type="button" class="toggle" id="menu-music"></button>
+          <button type="button" class="toggle" id="menu-sfx"></button>
+        </div>
         <div class="menu-actions">
           <div class="menu-status" id="menu-status" role="status" aria-live="polite"></div>
           <button type="button" class="btn" id="cancel-btn" hidden>Huỷ kết nối</button>
@@ -182,9 +189,7 @@ export class Menu {
             ${SHIP_TYPES.map(
               (t) => `<button type="button" class="ship-row" role="option" data-ship="${t.id}">
                 <span class="ship-name">${esc(t.name)}</span>
-                <span class="ship-role">${esc(t.role)}</span>
-                <span class="ship-file num">${t.id}</span>
-              </button>`,
+                <span class="ship-role">${esc(t.role)}</span>              </button>`,
             ).join('')}
           </div>
         </div>
@@ -211,6 +216,9 @@ export class Menu {
     this.statusEl = this.el.querySelector('#menu-status');
     this.cancelBtn = this.el.querySelector('#cancel-btn');
     this.cancelBtn.addEventListener('click', () => this.onCancel?.());
+    this.el.querySelector('#menu-music').addEventListener('click', () => this.onToggleMusic?.());
+    this.el.querySelector('#menu-sfx').addEventListener('click', () => this.onToggleSound?.());
+    this.refreshAudio();
     this.startBtn = this.el.querySelector('#start-btn');
     this.codeInput = this.el.querySelector('#code-input');
     this.codeInput.addEventListener('input', () => {
@@ -335,6 +343,17 @@ export class Menu {
     const i = SHIP_TYPES.findIndex((t) => t.id === this.state.shipId);
     const next = SHIP_TYPES[(i + dir + SHIP_TYPES.length) % SHIP_TYPES.length];
     this.selectShip(next.id);
+  }
+
+  refreshAudio() {
+    const a = this.audioState?.();
+    if (!a) return;
+    const m = this.el.querySelector('#menu-music');
+    const s = this.el.querySelector('#menu-sfx');
+    m.textContent = `Nhạc nền: ${a.music ? 'Bật' : 'Tắt'}`;
+    s.textContent = `Âm thanh: ${a.sound ? 'Bật' : 'Tắt'}`;
+    m.classList.toggle('on', a.music);
+    s.classList.toggle('on', a.sound);
   }
 
   /** Thông báo trạng thái (đang kết nối / lỗi) ở cuối menu. tone: 'error' | 'info' */

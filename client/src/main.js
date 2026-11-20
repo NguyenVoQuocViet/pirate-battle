@@ -8,6 +8,7 @@ import { Islands, ISLAND_PROP_MODELS } from './islands.js';
 import { Minimap } from './minimap.js';
 import { Projectiles } from './combat/projectiles.js';
 import { Sound } from './audio/sound.js';
+import { Music } from './audio/music.js';
 import { Game } from './game.js';
 import { SHIP_TYPES } from './config/ships.js';
 import { LOOT } from './config/game.js';
@@ -88,6 +89,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (e.code === 'Escape') game.togglePause();
+  if (e.code === 'KeyN' && !e.repeat) game.toggleMusic();
   // Nâng cấp 1–4, kỹ năng E / Shift
   const up = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code);
   if (up >= 0 && !e.repeat) game.buyUpgrade(up);
@@ -147,6 +149,8 @@ async function init() {
 
   const islands = new Islands(scene, propModels);
   const sound = new Sound();
+  const music = new Music(sound);
+  sound.onUnlock = () => music.start(); // trình duyệt chỉ cho phát sau thao tác đầu tiên
   projectiles = new Projectiles({ scene, effects, ocean, islands, sound, ballTemplate: ballModel });
   minimap = new Minimap({ islands, projectiles });
   const rig = new CameraRig(camera, renderer.domElement, null);
@@ -158,6 +162,7 @@ async function init() {
     effects,
     islands,
     sound,
+    music,
     rig,
     minimap,
     projectiles,

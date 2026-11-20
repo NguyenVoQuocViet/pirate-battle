@@ -54,8 +54,8 @@ function shuffle(arr) {
  * Luật thắng thua nằm trong module chế độ chơi (modes/*.js).
  */
 export class Game {
-  constructor({ scene, camera, ocean, effects, islands, sound, rig, minimap, projectiles, shipTemplates, lootTemplates, structureModels, keys }) {
-    Object.assign(this, { scene, camera, ocean, effects, islands, sound, rig, minimap, projectiles, shipTemplates, lootTemplates, structureModels, keys });
+  constructor({ scene, camera, ocean, effects, islands, sound, music, rig, minimap, projectiles, shipTemplates, lootTemplates, structureModels, keys }) {
+    Object.assign(this, { scene, camera, ocean, effects, islands, sound, music, rig, minimap, projectiles, shipTemplates, lootTemplates, structureModels, keys });
     this.state = 'menu';
     this.ships = [];
     this.bots = [];
@@ -86,6 +86,9 @@ export class Game {
       onSelectShip: (id) => this.setPreview(id),
       onStart: (settings) => this.start(settings),
       onOnline: (opts) => this.startOnline(opts),
+      onToggleMusic: () => this.toggleMusic(),
+      onToggleSound: () => this.toggleSound(),
+      audioState: () => ({ music: this.music.enabled, sound: !this.sound.muted }),
       onCancel: () => this.net.cancel(),
       onWarmup: () => this.net.warmup(),
     });
@@ -94,10 +97,9 @@ export class Game {
       muted: sound.muted,
       onPause: () => this.pause(),
       onResume: () => this.resume(),
-      onToggleSound: () => {
-        sound.unlock();
-        return sound.toggleMuted();
-      },
+      onToggleSound: () => this.toggleSound(),
+      onToggleMusic: () => this.toggleMusic(),
+      audioState: () => ({ music: this.music.enabled, sound: !this.sound.muted }),
       onRestart: () => this.start(this.settings),
       onMenu: () => this.enterMenu(),
     });
@@ -133,6 +135,7 @@ export class Game {
       if (me) this.projectiles.fireBroadside(me, me.sideOf(point));
     };
 
+    this.refreshAudioUi(); // trạng thái nút nhạc / âm thanh theo lựa chọn đã lưu
     this.enterMenu();
   }
 
@@ -170,8 +173,32 @@ export class Game {
     };
   }
 
+  /** Bật / tắt nhạc nền (phím N). Trả về trạng thái mới. */
+  toggleMusic() {
+    this.sound.unlock();
+    const on = this.music.toggle();
+    this.hud.toast(on ? 'Nhạc nền: bật' : 'Nhạc nền: tắt', null);
+    this.refreshAudioUi();
+    return on;
+  }
+
+  /** Bật / tắt âm thanh hiệu ứng (tiếng pháo, nổ...). Trả về true nếu đang tắt. */
+  toggleSound() {
+    this.sound.unlock();
+    const muted = this.sound.toggleMuted();
+    this.refreshAudioUi();
+    return muted;
+  }
+
+  refreshAudioUi() {
+    this.hud.setMuted(this.sound.muted);
+    this.hud.setMusic(this.music.enabled);
+    this.menu.refreshAudio();
+  }
+
   /** Hiện / ẩn các phần UI chỉ dùng trong trận. */
   setMatchUi(inMatch) {
+    this.music.setMood(inMatch ? 'battle' : 'calm');
     this.actionBar.setVisible(inMatch);
     this.touch?.setVisible(inMatch);
     this.career.setVisible(!inMatch);
