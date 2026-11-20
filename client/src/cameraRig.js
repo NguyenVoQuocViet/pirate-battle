@@ -24,6 +24,7 @@ export class CameraRig {
     this.mode = 'follow'; // 'follow' (top-down bám tàu) | 'orbit' (menu: xoay chậm quanh tàu)
     this.orbitAngle = 0.6;
     this.leftInset = 0; // phần màn hình bên trái bị menu che (px)
+    this.topInset = 0; // mép dưới bảng menu (px), dùng khi màn dọc
 
     this.raycaster = new THREE.Raycaster();
     this.ndc = new THREE.Vector2();
@@ -101,8 +102,11 @@ export class CameraRig {
       // Dời khung hình để tàu nằm ở nửa phải (bảng menu chiếm bên trái)
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const shift = w > 760 ? -(this.leftInset + 16) / 2 : 0;
-      this.camera.setViewOffset(w, h, shift, 0, w, h);
+      // Bảng menu chừa đủ chỗ bên phải → dời tàu sang phải; không thì (màn dọc) dời tàu xuống dưới bảng
+      const side = w - this.leftInset >= 220;
+      const shiftX = side ? -(this.leftInset + 16) / 2 : 0;
+      const shiftY = !side && h - this.topInset >= 160 ? -this.topInset / 2 : 0;
+      this.camera.setViewOffset(w, h, shiftX, shiftY, w, h);
       return;
     }
     const k = snap ? 1 : 1 - Math.exp(-FOLLOW_RATE * dt);

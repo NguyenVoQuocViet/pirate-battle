@@ -2,7 +2,8 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="screen-orientation" content="landscape" />
     <title>Pirate Battle</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -35,6 +36,12 @@
     <div id="abilities" hidden></div>
     <div id="career" class="panel" hidden></div>
     <div id="touch" hidden></div>
+    <!-- Nhắc xoay ngang (chỉ hiện trên cảm ứng, đang trong trận, màn dọc) -->
+    <div id="rotate">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 9a9 9 0 0 1 4-5M21 15a9 9 0 0 1-4 5"/></svg>
+      <div class="rotate-title">Xoay ngang điện thoại để chơi</div>
+      <button type="button" class="btn rotate-btn">Toàn màn hình &amp; xoay ngang</button>
+    </div>
 
     <div id="help" class="panel" hidden>
       <div><kbd>W</kbd><kbd>S</kbd> tăng/giảm tốc · <kbd>A</kbd><kbd>D</kbd> bánh lái · <kbd>Space</kbd> bắn hai mạn</div>

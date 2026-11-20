@@ -685,6 +685,7 @@ export class Game {
 
     if (this.state === 'menu') {
       this.rig.leftInset = this.menu.panelWidth;
+      this.rig.topInset = this.menu.panelBottom;
       this.wind.update(dt, this.focus, elapsed);
       if (this.preview) this.preview.update(dt, NO_INPUT, elapsed);
       this.effects.update(dt);

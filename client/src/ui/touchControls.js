@@ -4,6 +4,24 @@ export const IS_TOUCH = typeof window !== 'undefined' && ('ontouchstart' in wind
 const DEAD = 0.25; // vùng chết của joystick
 
 /**
+ * Thử vào toàn màn hình rồi khoá hướng ngang. Trình duyệt chỉ cho làm khi có thao tác chạm của
+ * người chơi (và khoá hướng chỉ chạy ở chế độ toàn màn hình) — lỗi thì bỏ qua, đã có màn nhắc xoay.
+ */
+export async function lockLandscape() {
+  try {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+  } catch {
+    /* iOS Safari không hỗ trợ toàn màn hình cho trang */
+  }
+  try {
+    await screen.orientation?.lock?.('landscape');
+  } catch {
+    /* không khoá được: người chơi tự xoay */
+  }
+}
+
+/**
  * Điều khiển cảm ứng: joystick ảo góc dưới trái (đẩy lên/xuống = ga/phanh, trái/phải = bánh lái)
  * và nút bấm góc dưới phải (bắn mạn trái, bắn mạn phải, nạp đạn R, kỹ năng E).
  * Joystick ghi trực tiếp vào bảng phím (giống bấm W/A/S/D).
@@ -24,12 +42,15 @@ export class TouchControls {
     this.knob = this.el.querySelector('#joy-knob');
     this.pointer = null;
 
+    document.querySelector('#rotate .rotate-btn')?.addEventListener('click', () => lockLandscape());
+
     const stop = (e) => {
       e.stopPropagation();
       e.preventDefault();
     };
     this.joy.addEventListener('pointerdown', (e) => {
       stop(e);
+      if (!document.fullscreenElement) lockLandscape();
       this.pointer = e.pointerId;
       try {
         this.joy.setPointerCapture(e.pointerId);
@@ -54,6 +75,7 @@ export class TouchControls {
     this.el.querySelectorAll('[data-act]').forEach((b) => {
       b.addEventListener('pointerdown', (e) => {
         stop(e);
+        if (!document.fullscreenElement) lockLandscape();
         b.classList.add('pressed');
         actions[b.dataset.act]();
       });
@@ -87,6 +109,7 @@ export class TouchControls {
 
   setVisible(v) {
     this.el.hidden = !v;
+    if (v) lockLandscape(); // thường được gọi ngay sau cú chạm "Vào trận" nên vẫn còn quyền
     if (!v) this.setAxes(0, 0);
   }
 }

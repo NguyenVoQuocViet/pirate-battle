@@ -83,6 +83,11 @@ export class Menu {
     this.el = document.getElementById('menu');
     this.el.innerHTML = `
       <div class="menu-panel">
+       <div class="m-tabs" role="tablist">
+         <button type="button" role="tab" data-mtab="main">Trận đấu</button>
+         <button type="button" role="tab" data-mtab="ships">Chọn tàu</button>
+         <button type="button" role="tab" data-mtab="guide">Hướng dẫn</button>
+       </div>
        <div class="menu-col menu-col-main">
         <header class="menu-head">
           <div class="label">Pirate Battle</div>
@@ -245,6 +250,16 @@ export class Menu {
       }),
     );
     this.el.querySelector('#create-btn').addEventListener('click', () => this.online('create'));
+    // Tab trên điện thoại: chỉ hiện một cột mỗi lúc (không lưu vào prefs)
+    this.mobileTab = 'main';
+    this.el.querySelectorAll('[data-mtab]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const t = b.dataset.mtab;
+        this.mobileTab = t === 'main' ? 'main' : 'side';
+        if (t !== 'main') this.state.sideTab = t;
+        this.render();
+      }),
+    );
     this.el.querySelectorAll('[data-side]').forEach((b) =>
       b.addEventListener('click', () => {
         this.state.sideTab = b.dataset.side;
@@ -317,6 +332,13 @@ export class Menu {
   /** Bề rộng bảng menu (để camera dời tàu xem trước sang phần màn hình còn trống). */
   get panelWidth() {
     return this.el.hidden ? 0 : this.el.querySelector('.menu-panel').offsetWidth;
+  }
+
+  /** Mép dưới của bảng menu (px) — dùng khi bảng phủ gần hết chiều ngang (màn dọc). */
+  get panelBottom() {
+    if (this.el.hidden) return 0;
+    const r = this.el.querySelector('.menu-panel').getBoundingClientRect();
+    return r.bottom;
   }
 
   get visible() {
@@ -441,6 +463,8 @@ export class Menu {
     this.el.querySelectorAll('[data-pane]').forEach((p) => (p.hidden = !p.dataset.pane.split(' ').includes(pt)));
     mark('[data-omode]', 'omode', this.state.onlineMode);
     mark('[data-side]', 'side', this.state.sideTab);
+    mark('[data-mtab]', 'mtab', this.mobileTab === 'main' ? 'main' : this.state.sideTab);
+    this.el.querySelector('.menu-panel').dataset.mtab = this.mobileTab;
     this.el.querySelectorAll('[data-sidepane]').forEach((p) => (p.hidden = p.dataset.sidepane !== this.state.sideTab));
     const om = ONLINE_MODES.find((m) => m.id === this.state.onlineMode);
     this.el.querySelector('#omode-desc').textContent = om.desc;
